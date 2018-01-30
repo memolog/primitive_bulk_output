@@ -80,8 +80,8 @@ function main(args) {
         outputModes = [0, 1, 2, 3, 4, 5, 6, 7, 8];
     }
     var nums;
-    if (program.nums) {
-        nums = program.nums.split(',');
+    if (program.num) {
+        nums = program.num.split(',');
     }
     else {
         nums = ['300'];

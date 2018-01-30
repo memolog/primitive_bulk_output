@@ -47,8 +47,8 @@ function main(args) {
   }
 
   let nums;
-  if (program.nums) {
-    nums = program.nums.split(',');
+  if (program.num) {
+    nums = program.num.split(',');
   } else {
     nums = ['300'];
   }
