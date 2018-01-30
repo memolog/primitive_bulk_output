@@ -38,69 +38,83 @@ var program = require('commander');
 var path = require('path');
 var pkg = require('../package.json');
 var spawnPrimitive = require('./index');
+var mkdirp = require('mkdirp');
 function main(args) {
-    return __awaiter(this, void 0, void 0, function () {
-        var filePath, dist, outputModes, nums, _a, name, ext, fileExt, tasks, optionMap, promises, _i, tasks_1, t;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
+    var _this = this;
+    program
+        .version(pkg.version)
+        .option('-i, --input <file')
+        .option('-o, --output <file>')
+        .option('-n, --num <string>')
+        .option('-m, --mode <string>')
+        .option('--rep <number>')
+        .option('--nth <number>')
+        .option('-r, --resize <number>')
+        .option('-s, --size <number>')
+        .option('-a, --alpha <number>')
+        .option('--bg <string>')
+        .option('-v, --verbose <string>')
+        .option('--vv <string>')
+        .option('-f, --format <string>')
+        .option('-d, --dist <dist>')
+        .option('--name <string>')
+        .option('--sync')
+        .parse(args);
+    var filePath = path.resolve(process.cwd(), program.input);
+    var dist;
+    if (program.dist) {
+        dist = path.resolve(process.cwd(), program.dist);
+    }
+    else if (program.output) {
+        var output = path.parse(program.output);
+        dist = path.resolve(process.cwd(), output.dir);
+    }
+    else {
+        dist = path.parse(filePath).dir;
+    }
+    var outputModes;
+    if (program.mode) {
+        outputModes = program.mode.split(',');
+    }
+    else {
+        outputModes = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+    }
+    var nums;
+    if (program.nums) {
+        nums = program.nums.split(',');
+    }
+    else {
+        nums = ['300'];
+    }
+    var _a = path.parse(filePath), name = _a.name, ext = _a.ext;
+    name = program.name || name;
+    if (program.output) {
+        var output = path.parse(program.output);
+        name = output.name;
+        ext = output.ext;
+    }
+    var format = (program.format || ext).replace(/^\./, '');
+    var tasks = [];
+    var optionMap = {
+        rep: 'rep',
+        nth: 'nth',
+        resize: 'r',
+        size: 's',
+        alpha: 'a',
+        bg: 'bg',
+        verbose: 'v',
+        vv: 'vv'
+    };
+    mkdirp(dist, function (err) { return __awaiter(_this, void 0, void 0, function () {
+        var promises, _i, tasks_1, t;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
                 case 0:
-                    program
-                        .version(pkg.version)
-                        .option('-i, --input <file')
-                        .option('-o, --output <file>')
-                        .option('-n, --num <string>')
-                        .option('-m, --mode <string>')
-                        .option('--rep <number>')
-                        .option('--nth <number>')
-                        .option('-r, --resize <number>')
-                        .option('-s, --size <number>')
-                        .option('-a, --alpha <number>')
-                        .option('--bg <string>')
-                        .option('-v, --verbose <string>')
-                        .option('--vv <string>')
-                        .option('-e, --ext <string>')
-                        .option('-d, --dist <dist>')
-                        .option('--sync')
-                        .parse(args);
-                    filePath = path.resolve(process.cwd(), program.input);
-                    if (program.dist) {
-                        dist = path.resolve(process.cwd(), program.dist);
+                    if (err) {
+                        process.stderr.write(err + '\n');
+                        process.exit(1);
                     }
-                    else if (program.output) {
-                        dist = path.resolve(process.cwd(), program.output);
-                    }
-                    else {
-                        dist = path.parse(filePath).dir;
-                    }
-                    if (program.mode) {
-                        outputModes = program.mode.split(',');
-                    }
-                    else {
-                        outputModes = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-                    }
-                    if (program.nums) {
-                        nums = program.nums.split(',');
-                    }
-                    else {
-                        nums = ['300'];
-                    }
-                    _a = path.parse(filePath), name = _a.name, ext = _a.ext;
-                    fileExt = (program.ext || ext).replace(/^\./, '');
-                    tasks = [];
-                    optionMap = {
-                        rep: 'rep',
-                        nth: 'nth',
-                        resize: 'r',
-                        size: 's',
-                        alpha: 'a',
-                        bg: 'bg',
-                        verbose: 'v',
-                        vv: 'vv'
-                    };
                     outputModes.forEach(function (mode) {
-                        if (program.ext) {
-                            ext;
-                        }
                         nums.forEach(function (num) {
                             var output = dist + "/" + name + "_m" + mode + "_n" + num;
                             var options = {
@@ -123,7 +137,10 @@ function main(args) {
                                 }
                                 options[optionName] = program[key];
                             }
-                            output += "." + fileExt;
+                            output += "." + format;
+                            if (program.output) {
+                                output = dist + "/" + name + "." + format;
+                            }
                             tasks.push([filePath, output, num, options]);
                         });
                     });
@@ -133,14 +150,14 @@ function main(args) {
                 case 1:
                     promises = [];
                     _i = 0, tasks_1 = tasks;
-                    _b.label = 2;
+                    _a.label = 2;
                 case 2:
                     if (!(_i < tasks_1.length)) return [3, 5];
                     t = tasks_1[_i];
                     return [4, spawnPrimitive.apply(void 0, t)];
                 case 3:
-                    _b.sent();
-                    _b.label = 4;
+                    _a.sent();
+                    _a.label = 4;
                 case 4:
                     _i++;
                     return [3, 2];
@@ -155,7 +172,7 @@ function main(args) {
                     return [2];
             }
         });
-    });
+    }); });
 }
 if (require.main === module) {
     main(process.argv);
