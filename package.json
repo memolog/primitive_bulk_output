@@ -1,0 +1,19 @@
+{
+  "name": "primitive_bulk",
+  "version": "1.0.0",
+  "description": "Bulk output of primitive images",
+  "bin": "js/bin.js",
+  "main": "js/main.js",
+  "scripts": {
+    "tsc": "tsc && chmod 755 ./js/bin.js"
+  },
+  "author": "Yutaka Yamaguchi",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^9.4.0",
+    "commander": "^2.13.0"
+  },
+  "devDependencies": {
+    "typescript": "^2.6.2"
+  }
+}
