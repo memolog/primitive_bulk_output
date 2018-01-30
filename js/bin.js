@@ -93,7 +93,7 @@ function main(args) {
         name = output.name;
         ext = output.ext;
     }
-    var format = (program.format || ext).replace(/^\./, '');
+    var formats = (program.format || ext).replace(/^\./, '').split(',');
     var tasks = [];
     var optionMap = {
         rep: 'rep',
@@ -116,32 +116,34 @@ function main(args) {
                     }
                     outputModes.forEach(function (mode) {
                         nums.forEach(function (num) {
-                            var output = dist + "/" + name + "_m" + mode + "_n" + num;
-                            var options = {
-                                m: mode
-                            };
-                            for (var _i = 0, _a = ['rep', 'nth', 'resize', 'size', 'alpha', 'bg', 'verbose', 'vv']; _i < _a.length; _i++) {
-                                var key = _a[_i];
-                                if (!program[key]) {
-                                    continue;
+                            formats.forEach(function (format) {
+                                var output = dist + "/" + name + "_m" + mode + "_n" + num;
+                                var options = {
+                                    m: mode
+                                };
+                                for (var _i = 0, _a = ['rep', 'nth', 'resize', 'size', 'alpha', 'bg', 'verbose', 'vv']; _i < _a.length; _i++) {
+                                    var key = _a[_i];
+                                    if (!program[key]) {
+                                        continue;
+                                    }
+                                    var optionName = optionMap[key];
+                                    if (key === 'bg') {
+                                        var bg = program.bg.replace(/^#/, '').toLowerCase();
+                                        output += "_bg" + bg;
+                                        options[optionName] = bg;
+                                        continue;
+                                    }
+                                    if (/^(rep|nth|r|s|a|bg)$/.test(optionName)) {
+                                        output += "_" + key + program[key];
+                                    }
+                                    options[optionName] = program[key];
                                 }
-                                var optionName = optionMap[key];
-                                if (key === 'bg') {
-                                    var bg = program.bg.replace(/^#/, '').toLowerCase();
-                                    output += "_bg" + bg;
-                                    options[optionName] = bg;
-                                    continue;
+                                output += "." + format;
+                                if (program.output) {
+                                    output = dist + "/" + name + "." + format;
                                 }
-                                if (/^(rep|nth|r|s|a|bg)$/.test(optionName)) {
-                                    output += "_" + key + program[key];
-                                }
-                                options[optionName] = program[key];
-                            }
-                            output += "." + format;
-                            if (program.output) {
-                                output = dist + "/" + name + "." + format;
-                            }
-                            tasks.push([filePath, output, num, options]);
+                                tasks.push([filePath, output, num, options]);
+                            });
                         });
                     });
                     if (!(program.sync === undefined)) return [3, 1];

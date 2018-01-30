@@ -61,7 +61,7 @@ function main(args) {
     ext = output.ext;
   }
 
-  const format = (program.format || ext).replace(/^\./, '');
+  const formats = (program.format || ext).replace(/^\./, '').split(',');
 
   const tasks = [];
 
@@ -84,37 +84,39 @@ function main(args) {
 
     outputModes.forEach(mode => {
       nums.forEach(num => {
-        let output = `${dist}/${name}_m${mode}_n${num}`;
+        formats.forEach(format => {
+          let output = `${dist}/${name}_m${mode}_n${num}`;
 
-        const options = {
-          m: mode
-        };
+          const options = {
+            m: mode
+          };
 
-        for (const key of ['rep', 'nth', 'resize', 'size', 'alpha', 'bg', 'verbose', 'vv']) {
-          if (!program[key]) {
-            continue;
+          for (const key of ['rep', 'nth', 'resize', 'size', 'alpha', 'bg', 'verbose', 'vv']) {
+            if (!program[key]) {
+              continue;
+            }
+            const optionName = optionMap[key];
+            if (key === 'bg') {
+              const bg = program.bg.replace(/^#/, '').toLowerCase();
+              output += `_bg${bg}`;
+              options[optionName] = bg;
+              continue;
+            }
+            if (/^(rep|nth|r|s|a|bg)$/.test(optionName)) {
+              output += `_${key}${program[key]}`;
+            }
+            options[optionName] = program[key];
           }
-          const optionName = optionMap[key];
-          if (key === 'bg') {
-            const bg = program.bg.replace(/^#/, '').toLowerCase();
-            output += `_bg${bg}`;
-            options[optionName] = bg;
-            continue;
+
+          output += `.${format}`;
+
+          // Override output file path
+          if (program.output) {
+            output = `${dist}/${name}.${format}`;
           }
-          if (/^(rep|nth|r|s|a|bg)$/.test(optionName)) {
-            output += `_${key}${program[key]}`;
-          }
-          options[optionName] = program[key];
-        }
 
-        output += `.${format}`;
-
-        // Override output file path
-        if (program.output) {
-          output = `${dist}/${name}.${format}`;
-        }
-
-        tasks.push([filePath, output, num, options]);
+          tasks.push([filePath, output, num, options]);
+        });
       });
     });
 
