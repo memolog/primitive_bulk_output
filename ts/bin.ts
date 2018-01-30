@@ -23,7 +23,7 @@ function main(args) {
     .option('--vv <string>')
     .option('-f, --format <string>')
     .option('-d, --dist <dist>')
-    .option('--name <string>')
+    .option('--fname <string>')
     .option('--sync')
     .parse(args);
 
@@ -54,7 +54,7 @@ function main(args) {
   }
 
   let { name, ext } = path.parse(filePath);
-  name = program.name || name;
+  name = program.fname || name;
   if (program.output) {
     const output = path.parse(program.output);
     name = output.name;

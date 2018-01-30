@@ -57,7 +57,7 @@ function main(args) {
         .option('--vv <string>')
         .option('-f, --format <string>')
         .option('-d, --dist <dist>')
-        .option('--name <string>')
+        .option('--fname <string>')
         .option('--sync')
         .parse(args);
     var filePath = path.resolve(process.cwd(), program.input);
@@ -87,7 +87,7 @@ function main(args) {
         nums = ['300'];
     }
     var _a = path.parse(filePath), name = _a.name, ext = _a.ext;
-    name = program.name || name;
+    name = program.fname || name;
     if (program.output) {
         var output = path.parse(program.output);
         name = output.name;
