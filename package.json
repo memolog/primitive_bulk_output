@@ -1,6 +1,6 @@
 {
   "name": "primitive_bulk",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Bulk output of primitive images",
   "bin": "js/bin.js",
   "main": "js/main.js",
