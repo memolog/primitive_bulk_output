@@ -62,3 +62,35 @@ The output files are the following in the same directory
 * sample_m6_n300.jpg
 * sample_m7_n300.jpg
 * sample_m8_n300.jpg
+
+### Options
+
+* --ext: You can set output format like `svg`, `png`, `jpg`, `gif`. The details of output format support, see [Primitive](https://github.com/fogleman/primitive#output-formats)
+* -d, --dist <dist>: the directory to distribute the output images
+
+The other options are passed to primitive CLI, so please referer to [Primitive](https://github.com/fogleman/primitive#command-line-usage) Usage.
+
+```
+  Usage: bin [options]
+
+
+  Options:
+
+    -V, --version           output the version number
+    -i, --input <file
+    -o, --output <file>
+    -n, --num <string>
+    -m, --mode <string>
+    --rep <number>
+    --nth <number>
+    -r, --resize <number>
+    -s, --size <number>
+    -a, --alpha <number>
+    --bg <string>
+    -v, --verbose <string>
+    --vv <string>
+    -e, --ext <string>
+    -d, --dist <dist>
+    --sync
+    -h, --help              output usage information
+```
