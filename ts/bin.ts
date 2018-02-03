@@ -84,39 +84,41 @@ function main(args) {
 
     outputModes.forEach(mode => {
       nums.forEach(num => {
-        formats.forEach(format => {
-          let output = `${dist}/${name}_m${mode}_n${num}`;
+        let output = `${dist}/${name}_m${mode}_n${num}`;
 
-          const options = {
-            m: mode
-          };
+        const options = {
+          m: mode
+        };
 
-          for (const key of ['rep', 'nth', 'resize', 'size', 'alpha', 'bg', 'verbose', 'vv']) {
-            if (!program[key]) {
-              continue;
-            }
-            const optionName = optionMap[key];
-            if (key === 'bg') {
-              const bg = program.bg.replace(/^#/, '').toLowerCase();
-              output += `_bg${bg}`;
-              options[optionName] = bg;
-              continue;
-            }
-            if (/^(rep|nth|r|s|a|bg)$/.test(optionName)) {
-              output += `_${key}${program[key]}`;
-            }
-            options[optionName] = program[key];
+        for (const key of ['rep', 'nth', 'resize', 'size', 'alpha', 'bg', 'verbose', 'vv']) {
+          if (!program[key]) {
+            continue;
           }
+          const optionName = optionMap[key];
+          if (key === 'bg') {
+            const bg = program.bg.replace(/^#/, '').toLowerCase();
+            output += `_bg${bg}`;
+            options[optionName] = bg;
+            continue;
+          }
+          if (/^(rep|nth|r|s|a|bg)$/.test(optionName)) {
+            output += `_${key}${program[key]}`;
+          }
+          options[optionName] = program[key];
+        }
 
-          output += `.${format}`;
-
+        const outputs = [];
+        formats.forEach(format => {
+          let o = output;
+          o += `.${format}`;
           // Override output file path
           if (program.output) {
-            output = `${dist}/${name}.${format}`;
+            o = `${dist}/${name}.${format}`;
           }
-
-          tasks.push([filePath, output, num, options]);
+          outputs.push(o);
         });
+
+        tasks.push([filePath, outputs, num, options]);
       });
     });
 

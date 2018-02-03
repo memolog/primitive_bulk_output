@@ -13,7 +13,12 @@ interface primitiveOptions {
   vv: string;
 }
 
-module.exports = function spawnPrimitive(i: string, o: string, n: number, options: primitiveOptions): Promise<void> {
+module.exports = function spawnPrimitive(
+  i: string,
+  o: string | string[],
+  n: number,
+  options: primitiveOptions
+): Promise<void> {
   return new Promise<void>((fulfill, reject) => {
     const args = [];
     if (!i || !o || !n) {
@@ -21,7 +26,11 @@ module.exports = function spawnPrimitive(i: string, o: string, n: number, option
     }
 
     args.push('-i', i);
-    args.push('-o', o);
+    if (typeof o === 'string') {
+      args.push('-o', o);
+    } else {
+      o.forEach(output => args.push('-o', output));
+    }
     args.push('-n', n);
     for (const key in options) {
       args.push('-' + key, options[key]);

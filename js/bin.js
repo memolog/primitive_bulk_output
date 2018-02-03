@@ -116,34 +116,37 @@ function main(args) {
                     }
                     outputModes.forEach(function (mode) {
                         nums.forEach(function (num) {
+                            var output = dist + "/" + name + "_m" + mode + "_n" + num;
+                            var options = {
+                                m: mode
+                            };
+                            for (var _i = 0, _a = ['rep', 'nth', 'resize', 'size', 'alpha', 'bg', 'verbose', 'vv']; _i < _a.length; _i++) {
+                                var key = _a[_i];
+                                if (!program[key]) {
+                                    continue;
+                                }
+                                var optionName = optionMap[key];
+                                if (key === 'bg') {
+                                    var bg = program.bg.replace(/^#/, '').toLowerCase();
+                                    output += "_bg" + bg;
+                                    options[optionName] = bg;
+                                    continue;
+                                }
+                                if (/^(rep|nth|r|s|a|bg)$/.test(optionName)) {
+                                    output += "_" + key + program[key];
+                                }
+                                options[optionName] = program[key];
+                            }
+                            var outputs = [];
                             formats.forEach(function (format) {
-                                var output = dist + "/" + name + "_m" + mode + "_n" + num;
-                                var options = {
-                                    m: mode
-                                };
-                                for (var _i = 0, _a = ['rep', 'nth', 'resize', 'size', 'alpha', 'bg', 'verbose', 'vv']; _i < _a.length; _i++) {
-                                    var key = _a[_i];
-                                    if (!program[key]) {
-                                        continue;
-                                    }
-                                    var optionName = optionMap[key];
-                                    if (key === 'bg') {
-                                        var bg = program.bg.replace(/^#/, '').toLowerCase();
-                                        output += "_bg" + bg;
-                                        options[optionName] = bg;
-                                        continue;
-                                    }
-                                    if (/^(rep|nth|r|s|a|bg)$/.test(optionName)) {
-                                        output += "_" + key + program[key];
-                                    }
-                                    options[optionName] = program[key];
-                                }
-                                output += "." + format;
+                                var o = output;
+                                o += "." + format;
                                 if (program.output) {
-                                    output = dist + "/" + name + "." + format;
+                                    o = dist + "/" + name + "." + format;
                                 }
-                                tasks.push([filePath, output, num, options]);
+                                outputs.push(o);
                             });
+                            tasks.push([filePath, outputs, num, options]);
                         });
                     });
                     if (!(program.sync === undefined)) return [3, 1];

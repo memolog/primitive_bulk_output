@@ -6,7 +6,12 @@ module.exports = function spawnPrimitive(i, o, n, options) {
             throw new Error('Input, Output, number of shapes paramters are required');
         }
         args.push('-i', i);
-        args.push('-o', o);
+        if (typeof o === 'string') {
+            args.push('-o', o);
+        }
+        else {
+            o.forEach(function (output) { return args.push('-o', output); });
+        }
         args.push('-n', n);
         for (var key in options) {
             args.push('-' + key, options[key]);
