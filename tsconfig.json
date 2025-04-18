@@ -1,15 +1,16 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
+    "target": "es2022",
+    "module": "esnext",
     "moduleResolution": "node",
     "removeComments": true,
     "noImplicitAny": false,
     "typeRoots": ["node_modules/@types", "typings"],
-    "lib": ["es2017", "dom"],
+    "lib": ["es2022", "dom"],
     "allowJs": true,
     "outDir": "./js",
-    "rootDir": "./ts"
+    "rootDir": "./ts",
+    "resolveJsonModule": true,
   },
   "include": ["ts/**/*"],
   "exclude": ["node_modules"]

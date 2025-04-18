@@ -1,7 +1,7 @@
-var childProcess = require('child_process');
-module.exports = function spawnPrimitive(i, o, n, options) {
-    return new Promise(function (fulfill, reject) {
-        var args = [];
+import * as childProcess from 'child_process';
+export function spawnPrimitive(i, o, n, options) {
+    return new Promise((fulfill, reject) => {
+        const args = [];
         if (!i || !o || !n) {
             throw new Error('Input, Output, number of shapes paramters are required');
         }
@@ -10,25 +10,26 @@ module.exports = function spawnPrimitive(i, o, n, options) {
             args.push('-o', o);
         }
         else {
-            o.forEach(function (output) { return args.push('-o', output); });
+            o.forEach(output => args.push('-o', output));
         }
         args.push('-n', n);
-        for (var key in options) {
+        for (const key in options) {
             args.push('-' + key, options[key]);
         }
-        var logStr = "primitive " + args.join(' ');
+        const logStr = `primitive ${args.join(' ')}`;
         console.log(logStr);
-        var cp = childProcess.spawn('primitive', args);
-        cp.stdout.on('data', function (data) {
-            console.log("stdout: " + data);
+        const cp = childProcess.spawn('primitive', args);
+        cp.stdout.on('data', data => {
+            console.log(`stdout: ${data}`);
         });
-        cp.stderr.on('data', function (data) {
-            console.log("stderr: " + data);
+        cp.stderr.on('data', data => {
+            console.log(`stderr: ${data}`);
             reject(data);
         });
-        cp.on('close', function (code) {
-            console.log("Finished: " + logStr);
+        cp.on('close', code => {
+            console.log(`Finished: ${logStr}`);
             fulfill();
         });
     });
-};
+}
+;

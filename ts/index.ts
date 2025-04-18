@@ -1,19 +1,19 @@
-const childProcess = require('child_process');
+import * as childProcess from 'child_process';
 
-interface primitiveOptions {
-  m: string;
-  rep: number;
-  nth: number;
-  r: number;
-  s: number;
-  a: number;
-  bg: string;
-  j: number;
-  v: string;
-  vv: string;
+export interface primitiveOptions {
+  m?: string;
+  rep?: number;
+  nth?: number;
+  r?: number;
+  s?: number;
+  a?: number;
+  bg?: string;
+  j?: number;
+  v?: string;
+  vv?: string;
 }
 
-module.exports = function spawnPrimitive(
+export function spawnPrimitive(
   i: string,
   o: string | string[],
   n: number,

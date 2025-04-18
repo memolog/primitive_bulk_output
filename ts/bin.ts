@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 
-const program = require('commander');
-const path = require('path');
-const pkg = require('../package.json');
-const spawnPrimitive = require('./index');
-const mkdirp = require('mkdirp');
+import { Command } from 'commander';
+import * as path from 'path';
+import { spawnPrimitive, type primitiveOptions } from './index.js';
+import * as fs from 'fs/promises';
 
-function main(args) {
+export default async function main(args) {
+  const program = new Command();
+
   program
-    .version(pkg.version)
-    .option('-i, --input <file')
+    .option('-i, --input <file>')
     .option('-o, --output <file>')
     .option('-n, --num <string>')
     .option('-m, --mode <string>')
@@ -24,46 +24,47 @@ function main(args) {
     .option('-f, --format <string>')
     .option('-d, --dist <dist>')
     .option('--fname <string>')
-    .option('--sync')
-    .parse(args);
+    .option('--sync');
 
-  const filePath = path.resolve(process.cwd(), program.input);
+  await program.parseAsync(args);
+  const options = program.opts();
+  const filePath = path.resolve(process.cwd(), options.input);
 
   let dist;
-  if (program.dist) {
-    dist = path.resolve(process.cwd(), program.dist);
-  } else if (program.output) {
-    const output = path.parse(program.output);
+  if (options.dist) {
+    dist = path.resolve(process.cwd(), options.dist);
+  } else if (options.output) {
+    const output = path.parse(options.output);
     dist = path.resolve(process.cwd(), output.dir);
   } else {
     dist = path.parse(filePath).dir;
   }
 
   let outputModes;
-  if (program.mode) {
-    outputModes = program.mode.split(',');
+  if (options.mode) {
+    outputModes = options.mode.split(',');
   } else {
     outputModes = [0, 1, 2, 3, 4, 5, 6, 7, 8];
   }
 
   let nums;
-  if (program.num) {
-    nums = program.num.split(',');
+  if (options.num) {
+    nums = options.num.split(',');
   } else {
     nums = ['300'];
   }
 
   let { name, ext } = path.parse(filePath);
-  name = program.fname || name;
-  if (program.output) {
-    const output = path.parse(program.output);
+  name = options.fname || name;
+  if (options.output) {
+    const output = path.parse(options.output);
     name = output.name;
     ext = output.ext;
   }
 
-  const formats = (program.format || ext).replace(/^\./, '').split(',');
+  const formats = (options.format || ext).replace(/^\./, '').split(',');
 
-  const tasks = [];
+  const tasks: Parameters<typeof spawnPrimitive>[] = [];
 
   const optionMap = {
     rep: 'rep',
@@ -76,74 +77,70 @@ function main(args) {
     vv: 'vv'
   };
 
-  mkdirp(dist, async err => {
-    if (err) {
-      process.stderr.write(err + '\n');
-      process.exit(1);
-    }
+  try {
+    await fs.mkdir(dist, { recursive: true });
+  } catch (err) {
+    process.stderr.write(err + '\n');
+    process.exit(1);
+  }
 
-    outputModes.forEach(mode => {
-      nums.forEach(num => {
-        let output = `${dist}/${name}_m${mode}_n${num}`;
+  outputModes.forEach(mode => {
+    nums.forEach(num => {
+      let output = `${dist}/${name}_m${mode}_n${num}`;
 
-        const options = {
-          m: mode
-        };
+      const opts: primitiveOptions = {
+        m: mode
+      };
 
-        for (const key of ['rep', 'nth', 'resize', 'size', 'alpha', 'bg', 'verbose', 'vv']) {
-          if (!program[key]) {
-            continue;
-          }
-          const optionName = optionMap[key];
-          if (key === 'bg') {
-            const bg = program.bg.replace(/^#/, '').toLowerCase();
-            output += `_bg${bg}`;
-            options[optionName] = bg;
-            continue;
-          }
-          if (/^(rep|nth|r|s|a|bg)$/.test(optionName)) {
-            output += `_${key}${program[key]}`;
-          }
-          options[optionName] = program[key];
+      for (const key of ['rep', 'nth', 'resize', 'size', 'alpha', 'bg', 'verbose', 'vv']) {
+        if (!options[key]) {
+          continue;
         }
-
-        const outputs = [];
-        formats.forEach(format => {
-          let o = output;
-          o += `.${format}`;
-          // Override output file path
-          if (program.output) {
-            o = `${dist}/${name}.${format}`;
-          }
-          outputs.push(o);
-        });
-
-        tasks.push([filePath, outputs, num, options]);
-      });
-    });
-
-    let promises;
-    if (program.sync === undefined) {
-      promises = tasks.map(t => spawnPrimitive(...t));
-    } else {
-      promises = [];
-      for (const t of tasks) {
-        await spawnPrimitive(...t);
+        const optionName = optionMap[key];
+        if (key === 'bg') {
+          const bg = options.bg.replace(/^#/, '').toLowerCase();
+          output += `_bg${bg}`;
+          opts[optionName] = bg;
+          continue;
+        }
+        if (/^(rep|nth|r|s|a|bg)$/.test(optionName)) {
+          output += `_${key}${options[key]}`;
+        }
+        opts[optionName] = options[key];
       }
-    }
 
-    Promise.all(promises)
-      .then(() => {
-        process.exit(0);
-      })
-      .catch(err => {
-        process.exit(1);
+      const outputs = [];
+      formats.forEach(format => {
+        let o = output;
+        o += `.${format}`;
+        // Override output file path
+        if (options.output) {
+          o = `${dist}/${name}.${format}`;
+        }
+        outputs.push(o);
       });
+
+      tasks.push([filePath, outputs, num, opts]);
+    });
   });
+
+  let promises;
+  if (options.sync === undefined) {
+    promises = tasks.map(t => spawnPrimitive(...t));
+  } else {
+    promises = [];
+    for (const t of tasks) {
+      await spawnPrimitive(...t);
+    }
+  }
+
+  Promise.all(promises)
+    .then(() => {
+      process.exit(0);
+    })
+    .catch(err => {
+      process.exit(1);
+    });
 }
 
-if (require.main === module) {
-  main(process.argv);
-}
-
-module.exports = main;
+main(process.argv);
