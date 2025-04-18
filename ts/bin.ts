@@ -1,35 +1,11 @@
 #!/usr/bin/env node
 
-import { Command } from 'commander';
+import { Command, OptionValues } from 'commander';
 import * as path from 'path';
-import { spawnPrimitive, type primitiveOptions } from './index.js';
+import { spawnPrimitive, type primitiveOptions, type spawnPrimitiveParams } from './index.js';
 import * as fs from 'fs/promises';
 
-export default async function main(args) {
-  const program = new Command();
-
-  program
-    .option('-i, --input <file>')
-    .option('-o, --output <file>')
-    .option('-n, --num <string>')
-    .option('-m, --mode <string>')
-    .option('--rep <number>')
-    .option('--nth <number>')
-    .option('-r, --resize <number>')
-    .option('-s, --size <number>')
-    .option('-a, --alpha <number>')
-    .option('--bg <string>')
-    .option('-v, --verbose <string>')
-    .option('--vv <string>')
-    .option('-f, --format <string>')
-    .option('-d, --dist <dist>')
-    .option('--fname <string>')
-    .option('--sync');
-
-  await program.parseAsync(args);
-  const options = program.opts();
-  const filePath = path.resolve(process.cwd(), options.input);
-
+async function executePrimitive(filePath: string, options: OptionValues) {
   let dist;
   if (options.dist) {
     dist = path.resolve(process.cwd(), options.dist);
@@ -64,7 +40,7 @@ export default async function main(args) {
 
   const formats = (options.format || ext).replace(/^\./, '').split(',');
 
-  const tasks: Parameters<typeof spawnPrimitive>[] = [];
+  const tasks: spawnPrimitiveParams[] = [];
 
   const optionMap = {
     rep: 'rep',
@@ -120,17 +96,17 @@ export default async function main(args) {
         outputs.push(o);
       });
 
-      tasks.push([filePath, outputs, num, opts]);
+      tasks.push({ i: filePath, o: outputs, n: num, options: opts });
     });
   });
 
   let promises;
   if (options.sync === undefined) {
-    promises = tasks.map(t => spawnPrimitive(...t));
+    promises = tasks.map(t => spawnPrimitive(t));
   } else {
     promises = [];
     for (const t of tasks) {
-      await spawnPrimitive(...t);
+      await spawnPrimitive(t);
     }
   }
 
@@ -141,6 +117,48 @@ export default async function main(args) {
     .catch(err => {
       process.exit(1);
     });
+}
+
+export default async function main(args) {
+  const program = new Command();
+
+  program
+    .option('-i, --input <file>')
+    .option('-o, --output <file>')
+    .option('-n, --num <string>')
+    .option('-m, --mode <string>')
+    .option('--rep <number>')
+    .option('--nth <number>')
+    .option('-r, --resize <number>')
+    .option('-s, --size <number>')
+    .option('-a, --alpha <number>')
+    .option('--bg <string>')
+    .option('-v, --verbose <string>')
+    .option('--vv <string>')
+    .option('-f, --format <string>')
+    .option('-d, --dist <dist>')
+    .option('--fname <string>')
+    .option('--sync');
+
+  await program.parseAsync(args);
+  const options = program.opts();
+  const filePath = path.resolve(process.cwd(), options.input);
+
+  const stats = await fs.stat(filePath);
+  if (stats.isDirectory()) {
+    const files = (await fs.readdir(filePath))
+      .filter((file: string) => {
+        const filePath = path.parse(file);
+        return filePath.ext && /\.(png|gif|jpe?g)/i.test(filePath.ext);
+      })
+      .forEach(async (file: string) => {
+        const filePath = path.resolve(process.cwd(), options.input, file);
+        console.log(`Processing ${filePath}`);
+        await executePrimitive(filePath, options);
+      });
+  } else {
+    await executePrimitive(filePath, options);
+  }
 }
 
 main(process.argv);

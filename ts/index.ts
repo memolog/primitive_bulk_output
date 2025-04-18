@@ -13,12 +13,15 @@ export interface primitiveOptions {
   vv?: string;
 }
 
-export function spawnPrimitive(
-  i: string,
-  o: string | string[],
-  n: number,
-  options: primitiveOptions
-): Promise<void> {
+export interface spawnPrimitiveParams {
+  i: string;
+  o: string | string[];
+  n: number;
+  options: primitiveOptions;
+}
+
+export function spawnPrimitive(params: spawnPrimitiveParams): Promise<void> {
+  const { i, o, n, options } = params;
   return new Promise<void>((fulfill, reject) => {
     const args = [];
     if (!i || !o || !n) {
@@ -55,4 +58,4 @@ export function spawnPrimitive(
       fulfill();
     });
   });
-};
+}

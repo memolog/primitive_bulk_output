@@ -1,5 +1,6 @@
 import * as childProcess from 'child_process';
-export function spawnPrimitive(i, o, n, options) {
+export function spawnPrimitive(params) {
+    const { i, o, n, options } = params;
     return new Promise((fulfill, reject) => {
         const args = [];
         if (!i || !o || !n) {
@@ -32,4 +33,3 @@ export function spawnPrimitive(i, o, n, options) {
         });
     });
 }
-;
