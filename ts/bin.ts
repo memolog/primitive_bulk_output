@@ -55,8 +55,24 @@ async function executePrimitive(filePath: string, options: OptionValues) {
     vv: 'vv'
   };
 
+  let stat;
   try {
+    stat = await fs.stat(dist);
+  } catch {
     await fs.mkdir(dist, { recursive: true });
+    stat = await fs.stat(dist);
+  }
+
+  try {
+    if (options.clean) {
+      (await fs.readdir(dist)).forEach(async file => {
+        const filePath = path.resolve(dist, file);
+        const stats = await fs.stat(filePath);
+        if (stats.isFile()) {
+          await fs.unlink(filePath);
+        }
+      });
+    }
   } catch (err) {
     process.stderr.write(err + '\n');
     process.exit(1);
@@ -152,6 +168,7 @@ export default async function main(args) {
     .option('-d, --dist <dist>')
     .option('--fname <string>')
     .option('--sync')
+    .option('--clean')
     .option('--no-suffix-name')
     .option('--no-optimize');
 
