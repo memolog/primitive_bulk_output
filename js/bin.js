@@ -3,6 +3,8 @@ import { Command } from 'commander';
 import * as path from 'path';
 import { spawnPrimitive } from './index.js';
 import * as fs from 'fs/promises';
+import imagemin from 'imagemin';
+import imageminSvgo from 'imagemin-svgo';
 async function executePrimitive(filePath, options) {
     let dist;
     if (options.dist) {
@@ -99,13 +101,24 @@ async function executePrimitive(filePath, options) {
             await spawnPrimitive(t);
         }
     }
-    Promise.all(promises)
-        .then(() => {
-        process.exit(0);
-    })
-        .catch(err => {
+    try {
+        await Promise.all(promises);
+    }
+    catch (err) {
+        process.stderr.write(err + '\n');
         process.exit(1);
-    });
+    }
+    if (options.optimize) {
+        console.log('optimizing images...');
+        await imagemin([`${dist}/*.{${formats.join(',')}}`], {
+            destination: dist,
+            plugins: [
+                imageminSvgo({
+                    plugins: [{ name: 'preset-default' }]
+                })
+            ]
+        });
+    }
 }
 export default async function main(args) {
     const program = new Command();
@@ -125,7 +138,9 @@ export default async function main(args) {
         .option('-f, --format <string>')
         .option('-d, --dist <dist>')
         .option('--fname <string>')
-        .option('--sync');
+        .option('--sync')
+        .option('--no-suffix-name')
+        .option('--no-optimize');
     await program.parseAsync(args);
     const options = program.opts();
     const filePath = path.resolve(process.cwd(), options.input);
@@ -138,7 +153,16 @@ export default async function main(args) {
         })
             .forEach(async (file) => {
             const filePath = path.resolve(process.cwd(), options.input, file);
-            console.log(`Processing ${filePath}`);
+            const { name, dir } = path.parse(file);
+            if (options.dist) {
+                options.dist = path.resolve(process.cwd(), options.dist, name);
+            }
+            else {
+                options.dist = path.resolve(process.cwd(), dir, name);
+            }
+            if (!options.output && !options.suffixName) {
+                options.output = name;
+            }
             await executePrimitive(filePath, options);
         });
     }
