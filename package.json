@@ -2,7 +2,9 @@
   "name": "primitive_bulk",
   "version": "2.4.0",
   "description": "Bulk output of primitive images",
-  "bin": "js/bin.js",
+  "bin": {
+    "primitive_bulk": "js/bin.js"
+  },
   "main": "js/index.js",
   "scripts": {
     "tsc": "tsc && chmod 755 ./js/bin.js",
