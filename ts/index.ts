@@ -23,7 +23,7 @@ export interface spawnPrimitiveParams {
 export function spawnPrimitive(params: spawnPrimitiveParams): Promise<void> {
   const { i, o, n, options } = params;
   return new Promise<void>((fulfill, reject) => {
-    const args = [];
+    const args: string[] = [];
     if (!i || !o || !n) {
       throw new Error('Input, Output, number of shapes paramters are required');
     }
@@ -34,7 +34,7 @@ export function spawnPrimitive(params: spawnPrimitiveParams): Promise<void> {
     } else {
       o.forEach(output => args.push('-o', output));
     }
-    args.push('-n', n);
+    args.push('-n', `${n}`);
     for (const key in options) {
       args.push('-' + key, options[key]);
     }

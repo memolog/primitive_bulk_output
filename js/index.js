@@ -13,7 +13,7 @@ export function spawnPrimitive(params) {
         else {
             o.forEach(output => args.push('-o', output));
         }
-        args.push('-n', n);
+        args.push('-n', `${n}`);
         for (const key in options) {
             args.push('-' + key, options[key]);
         }

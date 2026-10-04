@@ -4,8 +4,7 @@ import { Command, OptionValues } from 'commander';
 import * as path from 'path';
 import { spawnPrimitive, type primitiveOptions, type spawnPrimitiveParams } from './index.js';
 import * as fs from 'fs/promises';
-import imagemin from 'imagemin';
-import imageminSvgo from 'imagemin-svgo';
+import { optimize } from 'svgo';
 
 async function executePrimitive(filePath: string, options: OptionValues) {
   let dist;
@@ -103,7 +102,7 @@ async function executePrimitive(filePath: string, options: OptionValues) {
         opts[optionName] = options[key];
       }
 
-      const outputs = [];
+      const outputs: string[] = [];
       formats.forEach(format => {
         let o = output;
         o += `.${format}`;
@@ -135,16 +134,26 @@ async function executePrimitive(filePath: string, options: OptionValues) {
     process.exit(1);
   }
 
-  if (options.optimize) {
-    console.log('optimizing images...');
-    await imagemin([`${dist}/*.{${formats.join(',')}}`], {
-      destination: dist,
-      plugins: [
-        imageminSvgo({
-          plugins: [{ name: 'preset-default' }]
+  if (options.optimize && formats.includes('svg')) {
+    console.log('optimizing SVG images...');
+
+    const files = await fs.readdir(dist);
+
+    await Promise.all(
+      files
+        .filter(file => path.extname(file).toLowerCase() === '.svg')
+        .map(async file => {
+          const filePath = path.join(dist, file);
+          const svg = await fs.readFile(filePath, 'utf8');
+
+          const result = optimize(svg, {
+            path: filePath,
+            plugins: ['preset-default']
+          });
+
+          await fs.writeFile(filePath, result.data);
         })
-      ]
-    });
+    );
   }
 }
 

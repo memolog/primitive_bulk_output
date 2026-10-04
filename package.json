@@ -1,6 +1,6 @@
 {
   "name": "primitive_bulk",
-  "version": "2.2.0",
+  "version": "2.4.0",
   "description": "Bulk output of primitive images",
   "bin": "js/bin.js",
   "main": "js/index.js",
@@ -11,8 +11,8 @@
   "author": "Yutaka Yamaguchi",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^22.14.1",
-    "typescript": "^5.8.3"
+    "@types/node": "^26.6.4",
+    "typescript": "^7.0.2"
   },
   "keywords": [
     "primitive"
@@ -22,8 +22,7 @@
   },
   "type": "module",
   "dependencies": {
-    "commander": "^13.1.0",
-    "imagemin": "^9.0.1",
-    "imagemin-svgo": "^11.0.1"
+    "commander": "^15.0.0",
+    "svgo": "^4.1.0"
   }
 }
